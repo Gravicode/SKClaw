@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SKClaw.Core</RootNamespace>
+    <AssemblyName>SKClaw.Core</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>SKClaw Team</Authors>
+    <Description>SKClaw Core Library - AI Agent Framework powered by Semantic Kernel</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Semantic Kernel Core -->
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.75.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.75.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.OpenAI" Version="1.75.0-preview" />
+    <!--<PackageReference Include="Microsoft.SemanticKernel.Agents.OpenAI" Version="1.30.0" />-->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.75.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.30.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.30.0-alpha" />
+    <!--<PackageReference Include="Microsoft.SemanticKernel.Memory" Version="1.30.0-alpha" />-->
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.Core" Version="1.30.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.Web" Version="1.30.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Plugins.Memory" Version="1.75.0-alpha" />
+
+    <!-- Memory / Vector Stores -->
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Qdrant" Version="1.30.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Chroma" Version="1.30.0-alpha" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.Sqlite" Version="1.30.0-alpha" />
+
+    <!-- MCP -->
+    <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
+
+    <!-- Config & DI -->
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
+
+    <!-- SignalR for channels -->
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.7" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.7" />
+
+    <!-- HTTP & REST -->
+    <PackageReference Include="System.Net.Http.Json" Version="10.0.7" />
+
+    <!-- Serialization -->
+    <PackageReference Include="System.Text.Json" Version="10.0.7" />
+
+    <!-- Polly for resilience -->
+    <PackageReference Include="Polly" Version="8.6.6" />
+    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SKClaw.Plugins</RootNamespace>
+    <AssemblyName>SKClaw.Plugins</AssemblyName>
+    <Description>SKClaw Custom Plugins — Add your own skills and tools here</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SKClaw.Core\SKClaw.Core.csproj" />
+  </ItemGroup>
+
+</Project>

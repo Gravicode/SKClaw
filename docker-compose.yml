@@ -1,0 +1,112 @@
+version: '3.9'
+
+# SKClaw Docker Compose
+# Usage: docker-compose up -d
+# Edit app.config before running to set API keys and preferences.
+
+services:
+
+  # ── SKClaw Web (main service) ────────────────────────────────
+  skclaw-web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    container_name: skclaw-web
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app.config:/app/app.config:ro
+      - skclaw-data:/app/data
+      - skclaw-workspace:/root/.skclaw/workspace
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+    depends_on:
+      - skclaw-qdrant
+    networks:
+      - skclaw-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── SKClaw MCP Server (standalone) ──────────────────────────
+  skclaw-mcp:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mcp
+    container_name: skclaw-mcp
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./app.config:/app/app.config:ro
+      - skclaw-workspace:/root/.skclaw/workspace
+    environment:
+      - ASPNETCORE_URLS=http://+:5001
+    networks:
+      - skclaw-net
+
+  # ── Qdrant (vector database for memory) ─────────────────────
+  skclaw-qdrant:
+    image: qdrant/qdrant:latest
+    container_name: skclaw-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - skclaw-net
+
+  # ── Ollama (local LLM) - optional ───────────────────────────
+  skclaw-ollama:
+    image: ollama/ollama:latest
+    container_name: skclaw-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    networks:
+      - skclaw-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles:
+      - ollama  # only starts with: docker-compose --profile ollama up
+
+  # ── Nginx reverse proxy ─────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: skclaw-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - skclaw-web
+    networks:
+      - skclaw-net
+    profiles:
+      - nginx
+
+volumes:
+  skclaw-data:
+  skclaw-workspace:
+  qdrant-data:
+  ollama-models:
+
+networks:
+  skclaw-net:
+    driver: bridge

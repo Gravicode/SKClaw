@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SKClaw — Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070f;
+      --surface: #0e0e1a;
+      --surface2: #161624;
+      --surface3: #1e1e30;
+      --border: #252538;
+      --accent: #6d28d9;
+      --accent2: #4338ca;
+      --accent-glow: rgba(109,40,217,0.25);
+      --text: #e2e2f0;
+      --text-muted: #5d5d7a;
+      --text-dim: #8888a8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); }
+
+    /* Login screen */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 0%, rgba(109,40,217,0.15) 0%, transparent 60%);
+    }
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 380px;
+      text-align: center;
+    }
+    .login-logo { font-size: 48px; margin-bottom: 12px; }
+    .login-title { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .login-title span { color: var(--accent); }
+    .login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-label { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; display: block; font-family: var(--mono); }
+    .form-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .login-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: white;
+      padding: 12px; border-radius: 10px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-error { color: var(--error); font-size: 13px; margin-top: 12px; display: none; }
+
+    /* App shell */
+    .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+    /* Sidebar nav */
+    .nav {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+    }
+    .nav-logo {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 16px; font-weight: 700;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-logo small { display: block; font-size: 10px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+    .nav-items { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-dim);
+      display: flex; align-items: center; gap: 10px;
+      transition: all 0.15s;
+      border: none; background: transparent; text-align: left; width: 100%;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: rgba(109,40,217,0.15); color: var(--text); border-left: 2px solid var(--accent); }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-footer { padding: 16px; border-top: 1px solid var(--border); }
+    .logout-btn {
+      width: 100%; background: transparent; border: 1px solid var(--border);
+      color: var(--text-dim); padding: 9px; border-radius: 8px;
+      cursor: pointer; font-size: 13px; font-family: var(--sans);
+      transition: all 0.15s;
+    }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    /* Main content */
+    .main {
+      padding: 32px 36px;
+      overflow-y: auto;
+    }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .card-icon { font-size: 28px; margin-bottom: 12px; }
+    .card-value { font-size: 28px; font-weight: 700; font-family: var(--mono); margin-bottom: 4px; }
+    .card-label { font-size: 12px; color: var(--text-muted); }
+    .card.accent { border-color: rgba(109,40,217,0.4); background: rgba(109,40,217,0.05); }
+    .card.success { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.05); }
+    .card.warning { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.05); }
+
+    /* Status items */
+    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .status-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .section-title { font-size: 13px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .status-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-key { color: var(--text-muted); font-family: var(--mono); font-size: 11px; }
+    .status-val { font-weight: 500; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+    }
+    .badge.on { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge.off { background: rgba(239,68,68,0.1); color: var(--error); }
+    .badge.neutral { background: rgba(99,99,160,0.15); color: var(--text-dim); }
+
+    /* Tools table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; font-size: 11px; font-family: var(--mono); color: var(--text-muted); border-bottom: 1px solid var(--border); font-weight: 400; }
+    td { padding: 12px 14px; border-bottom: 1px solid rgba(37,37,56,0.5); }
+    tr:hover td { background: var(--surface2); }
+    .tool-name { font-family: var(--mono); color: var(--accent); font-size: 12px; }
+
+    /* Test chat */
+    .test-chat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0;
+      overflow: hidden;
+    }
+    .test-chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px; font-weight: 600;
+      background: var(--surface2);
+    }
+    .test-chat-messages {
+      height: 360px;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .test-msg { padding: 10px 14px; border-radius: 10px; max-width: 85%; font-size: 13px; line-height: 1.5; }
+    .test-msg.user { background: rgba(109,40,217,0.15); border: 1px solid rgba(109,40,217,0.25); align-self: flex-end; }
+    .test-msg.ai { background: var(--surface2); border: 1px solid var(--border); align-self: flex-start; }
+    .test-msg pre { font-size: 11px; white-space: pre-wrap; word-break: break-word; }
+    .test-chat-input { display: flex; gap: 10px; padding: 14px 16px; border-top: 1px solid var(--border); }
+    .test-input {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; font-family: var(--sans); outline: none;
+    }
+    .test-input:focus { border-color: var(--accent); }
+    .test-send-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: white; padding: 10px 18px; border-radius: 8px;
+      cursor: pointer; font-size: 13px; font-family: var(--sans);
+    }
+
+    /* Config display */
+    .config-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .config-title { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 14px; font-family: var(--mono); }
+    .config-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(37,37,56,0.4); font-size: 13px; }
+    .config-row:last-child { border-bottom: none; }
+    .config-key { color: var(--text-muted); font-size: 12px; }
+    .config-val { font-family: var(--mono); font-size: 12px; color: var(--text); }
+    .config-val.secret { filter: blur(4px); cursor: pointer; transition: filter 0.2s; }
+    .config-val.secret:hover { filter: none; }
+
+    /* Toast */
+    .toast {
+      position: fixed; top: 20px; right: 20px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 18px; font-size: 13px;
+      z-index: 9999; animation: toastIn 0.2s ease;
+    }
+    @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+
+    /* Loading */
+    .loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+    .spin { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">🦞</div>
+    <div class="login-title">SK<span>Claw</span></div>
+    <div class="login-sub">Admin Panel — Masukkan kredensial Anda</div>
+    <div class="form-group">
+      <label class="form-label">USERNAME</label>
+      <input class="form-input" type="text" id="loginUser" placeholder="admin" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">PASSWORD</label>
+      <input class="form-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') doLogin()" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">Masuk ke Admin</button>
+    <div class="login-error" id="loginError">Username atau password salah.</div>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app" id="appWrap" style="display:none">
+  <nav class="nav">
+    <div class="nav-logo">SK<span>Claw</span><small>Admin Panel</small></div>
+    <div class="nav-items">
+      <button class="nav-item active" onclick="goto('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="goto('tools', this)">
+        <span class="nav-icon">🔧</span> Tools & Skills
+      </button>
+      <button class="nav-item" onclick="goto('channels', this)">
+        <span class="nav-icon">📡</span> Channels
+      </button>
+      <button class="nav-item" onclick="goto('test', this)">
+        <span class="nav-icon">💬</span> Test Chat
+      </button>
+      <button class="nav-item" onclick="goto('config', this)">
+        <span class="nav-icon">⚙️</span> Configuration
+      </button>
+      <button class="nav-item" onclick="goto('api', this)">
+        <span class="nav-icon">🔗</span> API Docs
+      </button>
+    </div>
+    <div class="nav-footer">
+      <button class="logout-btn" onclick="doLogout()">⬅ Logout</button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Status sistem SKClaw secara real-time</div>
+      <div class="cards" id="dashCards">
+        <div class="loading"><span class="spin">⟳</span> Loading...</div>
+      </div>
+      <div class="status-grid" id="statusGrid">
+        <div class="loading"><span class="spin">⟳</span> Loading...</div>
+      </div>
+    </div>
+
+    <!-- Tools -->
+    <div class="page" id="page-tools">
+      <div class="page-title">Tools & Skills</div>
+      <div class="page-sub">Semua tool dan skill yang terdaftar di Semantic Kernel</div>
+      <div class="table-wrap">
+        <table id="toolsTable">
+          <thead>
+            <tr><th>TOOL NAME</th><th>DESCRIPTION</th><th>ACTION</th></tr>
+          </thead>
+          <tbody><tr><td colspan="3" class="loading"><span class="spin">⟳</span> Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Channels -->
+    <div class="page" id="page-channels">
+      <div class="page-title">Channels</div>
+      <div class="page-sub">Status integrasi channel messaging</div>
+      <div id="channelsContent"><div class="loading"><span class="spin">⟳</span> Loading...</div></div>
+    </div>
+
+    <!-- Test Chat -->
+    <div class="page" id="page-test">
+      <div class="page-title">Test Chat</div>
+      <div class="page-sub">Uji agent langsung dari admin panel</div>
+      <div class="test-chat">
+        <div class="test-chat-header">🦞 SKClaw Agent — Direct Test</div>
+        <div class="test-chat-messages" id="testMessages">
+          <div class="test-msg ai">Halo! Saya siap untuk diuji. Kirim pesan apa saja.</div>
+        </div>
+        <div class="test-chat-input">
+          <input class="test-input" id="testInput" placeholder="Kirim pesan uji..."
+                 onkeydown="if(event.key==='Enter') sendTestMsg()" />
+          <button class="test-send-btn" onclick="sendTestMsg()">Kirim ➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config -->
+    <div class="page" id="page-config">
+      <div class="page-title">Configuration</div>
+      <div class="page-sub">Konfigurasi yang aktif (dibaca dari app.config)</div>
+      <div id="configContent"><div class="loading"><span class="spin">⟳</span> Loading...</div></div>
+    </div>
+
+    <!-- API Docs -->
+    <div class="page" id="page-api">
+      <div class="page-title">API Documentation</div>
+      <div class="page-sub">Endpoint yang tersedia untuk integrasi eksternal</div>
+      <div id="apiContent"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+let token = localStorage.getItem('skclaw_admin_token') || '';
+let statusData = null;
+
+// ── Auth ──────────────────────────────────────────────────────
+async function doLogin() {
+  const user = document.getElementById('loginUser').value;
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+    if (!res.ok) throw new Error('Invalid credentials');
+    const data = await res.json();
+    token = data.token;
+    localStorage.setItem('skclaw_admin_token', token);
+    showApp();
+  } catch {
+    err.style.display = 'block';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('skclaw_admin_token');
+  token = '';
+  document.getElementById('appWrap').style.display = 'none';
+  document.getElementById('loginWrap').style.display = 'flex';
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch('/api' + path, {
+    ...opts,
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+  });
+  if (res.status === 401) { doLogout(); return null; }
+  return res.ok ? res.json() : null;
+}
+
+// ── Navigation ─────────────────────────────────────────────────
+function goto(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+  loadPage(page);
+}
+
+function loadPage(page) {
+  if (page === 'dashboard') loadDashboard();
+  else if (page === 'tools') loadTools();
+  else if (page === 'channels') loadChannels();
+  else if (page === 'config') loadConfig();
+  else if (page === 'api') renderApiDocs();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────
+async function loadDashboard() {
+  const data = await api('/admin/status');
+  if (!data) return;
+  statusData = data;
+
+  const uptime = formatUptime(data.uptime);
+
+  document.getElementById('dashCards').innerHTML = `
+    <div class="card accent">
+      <div class="card-icon">🤖</div>
+      <div class="card-value">${data.llmProvider?.toUpperCase() || '—'}</div>
+      <div class="card-label">LLM Provider</div>
+    </div>
+    <div class="card success">
+      <div class="card-icon">✅</div>
+      <div class="card-value">${data.isHealthy ? 'OK' : 'ERR'}</div>
+      <div class="card-label">System Health</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔧</div>
+      <div class="card-value">${data.loadedPlugins?.length || 0}</div>
+      <div class="card-label">Loaded Skills</div>
+    </div>
+    <div class="card warning">
+      <div class="card-icon">⏱️</div>
+      <div class="card-value">${uptime}</div>
+      <div class="card-label">Uptime</div>
+    </div>
+  `;
+
+  const channels = data.enabledChannels || [];
+  const channelList = ['Telegram','Discord','Slack','WhatsApp','LINE']
+    .map(c => `<div class="status-row">
+      <span class="status-key">${c}</span>
+      <span class="badge ${channels.includes(c) ? 'on' : 'off'}">${channels.includes(c) ? '● Active' : '○ Disabled'}</span>
+    </div>`).join('');
+
+  document.getElementById('statusGrid').innerHTML = `
+    <div class="status-section">
+      <div class="section-title">System Info</div>
+      <div class="status-row"><span class="status-key">NAME</span><span class="status-val">${data.name}</span></div>
+      <div class="status-row"><span class="status-key">VERSION</span><span class="status-val">${data.version}</span></div>
+      <div class="status-row"><span class="status-key">ENVIRONMENT</span><span class="badge neutral">${data.environment}</span></div>
+      <div class="status-row"><span class="status-key">LLM MODEL</span><span class="status-val" style="font-family:var(--mono);font-size:11px">${data.llmModel}</span></div>
+      <div class="status-row"><span class="status-key">MEMORY</span><span class="status-val">${data.memoryProvider}</span></div>
+      <div class="status-row"><span class="status-key">MCP SERVER</span><span class="badge ${data.mcpEnabled ? 'on' : 'off'}">${data.mcpEnabled ? '● Enabled' : '○ Disabled'}</span></div>
+    </div>
+    <div class="status-section">
+      <div class="section-title">Channels</div>
+      ${channelList}
+    </div>
+  `;
+}
+
+// ── Tools ──────────────────────────────────────────────────────
+async function loadTools() {
+  const data = await api('/admin/tools');
+  if (!data) return;
+
+  const rows = data.map(t => `
+    <tr>
+      <td><span class="tool-name">${t.name}</span></td>
+      <td style="color:var(--text-dim)">${t.description || '—'}</td>
+      <td><button onclick="testTool('${t.name}')" style="background:rgba(109,40,217,0.1);border:1px solid rgba(109,40,217,0.3);color:var(--accent);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--mono)">TEST</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelector('#toolsTable tbody').innerHTML =
+    rows || '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">No tools loaded</td></tr>';
+}
+
+function testTool(name) {
+  const input = prompt(`Test tool: ${name}\nMasukkan argumen (JSON):`);
+  if (!input) return;
+  try {
+    const args = JSON.parse(input);
+    fetch(`/api/mcp/tools/${name}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(args)
+    }).then(r => r.json()).then(d => alert('Result:\n' + JSON.stringify(d, null, 2)));
+  } catch { alert('JSON tidak valid'); }
+}
+
+// ── Channels ───────────────────────────────────────────────────
+async function loadChannels() {
+  const data = await api('/admin/config');
+  if (!data) return;
+  const ch = data.channels || {};
+
+  const channelInfo = [
+    { name: 'Telegram', key: 'telegram', icon: '✈️', desc: 'Polling atau Webhook mode', webhookPath: '/webhooks/telegram' },
+    { name: 'Discord', key: 'discord', icon: '🎮', desc: 'Events API + Slash Commands', webhookPath: '/webhooks/discord' },
+    { name: 'Slack', key: 'slack', icon: '💼', desc: 'Events API (Socket/HTTP)', webhookPath: '/webhooks/slack' },
+    { name: 'WhatsApp', key: 'whatsapp', icon: '📱', desc: 'Via Twilio API', webhookPath: '/webhooks/whatsapp' },
+    { name: 'LINE', key: 'line', icon: '🟢', desc: 'LINE Messaging API', webhookPath: '/webhooks/line' },
+  ];
+
+  document.getElementById('channelsContent').innerHTML = channelInfo.map(c => `
+    <div class="config-block" style="margin-bottom:14px">
+      <div class="config-title" style="display:flex;align-items:center;gap:10px;justify-content:space-between">
+        <span>${c.icon} ${c.name}</span>
+        <span class="badge ${ch[c.key] ? 'on' : 'off'}">${ch[c.key] ? '● Active' : '○ Disabled'}</span>
+      </div>
+      <div class="config-row"><span class="config-key">Description</span><span class="config-val">${c.desc}</span></div>
+      <div class="config-row"><span class="config-key">Webhook URL</span>
+        <span class="config-val" style="font-size:11px">${window.location.origin}${c.webhookPath}</span>
+      </div>
+      <div class="config-row"><span class="config-key">Status</span>
+        <span class="config-val">${ch[c.key] ? 'Running' : 'Set Channels:'+c.name.toLowerCase()+':Enabled=true in app.config'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Config ─────────────────────────────────────────────────────
+async function loadConfig() {
+  const data = await api('/admin/config');
+  if (!data) return;
+
+  document.getElementById('configContent').innerHTML = `
+    <div class="config-block">
+      <div class="config-title">APP</div>
+      ${cfgRow('Name', data.app?.name)}
+      ${cfgRow('Version', data.app?.version)}
+      ${cfgRow('Environment', data.app?.environment)}
+    </div>
+    <div class="config-block">
+      <div class="config-title">LLM</div>
+      ${cfgRow('Provider', data.llm?.defaultProvider)}
+      ${cfgRow('Model', data.llm?.defaultModel)}
+      ${cfgRow('Max Tokens', data.llm?.maxTokens)}
+      ${cfgRow('Temperature', data.llm?.temperature)}
+    </div>
+    <div class="config-block">
+      <div class="config-title">MEMORY</div>
+      ${cfgRow('Provider', data.memory?.provider)}
+      ${cfgRow('Collection', data.memory?.collectionName)}
+    </div>
+    <div class="config-block">
+      <div class="config-title">MCP</div>
+      ${cfgRow('Enabled', data.mcp?.enabled)}
+      ${cfgRow('Transport', data.mcp?.transport)}
+      ${cfgRow('SSE Endpoint', window.location.origin + '/mcp/sse')}
+      ${cfgRow('Message Endpoint', window.location.origin + '/mcp/message')}
+    </div>
+    <div class="config-block">
+      <div class="config-title">PLUGINS</div>
+      ${(data.plugins?.enabledSkills || []).map(s => cfgRow('Skill', s)).join('')}
+    </div>
+  `;
+}
+
+function cfgRow(key, val) {
+  return `<div class="config-row">
+    <span class="config-key">${key}</span>
+    <span class="config-val">${val ?? '—'}</span>
+  </div>`;
+}
+
+// ── Test Chat ──────────────────────────────────────────────────
+async function sendTestMsg() {
+  const input = document.getElementById('testInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const msgs = document.getElementById('testMessages');
+  msgs.innerHTML += `<div class="test-msg user">${escHtml(msg)}</div>`;
+  msgs.innerHTML += `<div class="test-msg ai" id="testReply">⟳ Thinking...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ message: msg })
+    });
+    const data = await res.json();
+    document.getElementById('testReply').id = '';
+    document.getElementById('testReply') || (msgs.lastElementChild.id = '');
+    msgs.querySelector('#testReply')?.remove();
+    msgs.innerHTML += `<div class="test-msg ai"><pre>${escHtml(data.content || JSON.stringify(data, null, 2))}</pre></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch (e) {
+    msgs.innerHTML += `<div class="test-msg ai" style="color:var(--error)">Error: ${e.message}</div>`;
+  }
+}
+
+// ── API Docs ───────────────────────────────────────────────────
+function renderApiDocs() {
+  const base = window.location.origin;
+  const endpoints = [
+    { method: 'POST', path: '/api/chat', auth: 'API Key', desc: 'Simple chat endpoint', body: '{"message": "Hello"}' },
+    { method: 'POST', path: '/api/chat/completions', auth: 'API Key', desc: 'OpenAI-compatible completions', body: '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello"}],"stream":false}' },
+    { method: 'POST', path: '/api/chat/stream', auth: 'API Key', desc: 'SSE streaming chat', body: '{"message": "Hello"}' },
+    { method: 'GET', path: '/api/health', auth: 'None', desc: 'Health check', body: '' },
+    { method: 'GET', path: '/api/models', auth: 'None', desc: 'List available models (OpenAI-compat)', body: '' },
+    { method: 'GET', path: '/mcp/sse', auth: 'None', desc: 'MCP Server-Sent Events endpoint', body: '' },
+    { method: 'POST', path: '/mcp/message', auth: 'None', desc: 'MCP JSON-RPC tool call endpoint', body: '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"Time_GetCurrentTime","arguments":{}}}' },
+    { method: 'GET', path: '/api/mcp/tools', auth: 'API Key', desc: 'List all MCP tools (REST)', body: '' },
+    { method: 'POST', path: '/api/mcp/tools/{toolName}', auth: 'API Key', desc: 'Call MCP tool directly', body: '{}' },
+    { method: 'POST', path: '/webhooks/telegram', auth: 'None', desc: 'Telegram webhook receiver', body: '' },
+    { method: 'POST', path: '/webhooks/slack', auth: 'Slack Sig', desc: 'Slack Events API webhook', body: '' },
+    { method: 'POST', path: '/webhooks/discord', auth: 'None', desc: 'Discord interactions webhook', body: '' },
+    { method: 'POST', path: '/webhooks/whatsapp', auth: 'None', desc: 'WhatsApp/Twilio webhook', body: '' },
+    { method: 'GET', path: '/hubs/chat', auth: 'JWT/Cookie', desc: 'SignalR WebSocket hub (web chat)', body: '' },
+    { method: 'POST', path: '/api/admin/login', auth: 'None', desc: 'Admin login → JWT token', body: '{"username":"admin","password":"changeme"}' },
+    { method: 'GET', path: '/api/admin/status', auth: 'JWT', desc: 'System status', body: '' },
+  ];
+
+  const colors = { GET: '#10b981', POST: '#6d28d9', DELETE: '#ef4444', PUT: '#f59e0b' };
+
+  document.getElementById('apiContent').innerHTML = endpoints.map(ep => `
+    <div class="config-block" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <span style="background:${colors[ep.method] || '#666'};color:white;padding:2px 8px;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700">${ep.method}</span>
+        <code style="font-family:var(--mono);font-size:12px;color:var(--accent)">${base}${ep.path}</code>
+        <span class="badge neutral" style="margin-left:auto">${ep.auth}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-dim);margin-bottom:${ep.body ? 8 : 0}px">${ep.desc}</div>
+      ${ep.body ? `<div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:11px;color:var(--text-dim);overflow-x:auto"><pre>${escHtml(ep.body)}</pre></div>` : ''}
+    </div>
+  `).join('');
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function formatUptime(uptime) {
+  if (!uptime) return '—';
+  const match = uptime.match(/(\d+)\.(\d+):(\d+):(\d+)/);
+  if (!match) return uptime;
+  const [,d,h,m] = match;
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function showApp() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('appWrap').style.display = 'grid';
+  loadDashboard();
+}
+
+// ── Init ──────────────────────────────────────────────────────
+if (token) {
+  api('/admin/status').then(d => {
+    if (d) showApp();
+    else { token = ''; localStorage.removeItem('skclaw_admin_token'); }
+  });
+}
+</script>
+</body>
+</html>

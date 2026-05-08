@@ -1,0 +1,29 @@
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+WORKDIR /app
+EXPOSE 5000
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+COPY ["src/SKClaw.Core/SKClaw.Core.csproj", "src/SKClaw.Core/"]
+COPY ["src/SKClaw.Web/SKClaw.Web.csproj", "src/SKClaw.Web/"]
+COPY ["src/SKClaw.Plugins/SKClaw.Plugins.csproj", "src/SKClaw.Plugins/"]
+
+RUN dotnet restore "src/SKClaw.Web/SKClaw.Web.csproj"
+
+COPY . .
+
+RUN dotnet build "src/SKClaw.Web/SKClaw.Web.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "src/SKClaw.Web/SKClaw.Web.csproj" -c Release -o /app/publish \
+    --no-restore
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# Create workspace directory
+RUN mkdir -p /root/.skclaw/workspace
+
+ENTRYPOINT ["dotnet", "SKClaw.Web.dll"]
