@@ -7,7 +7,7 @@ using Microsoft.SemanticKernel;
 using SKClaw.Core.Configuration;
 
 namespace SKClaw.Core.Skills;
-
+/*
 // ─────────────────────────────────────────────────────────────
 // TIME SKILL
 // ─────────────────────────────────────────────────────────────
@@ -481,7 +481,7 @@ public class EmailSkill
         catch (Exception ex) { return $"Failed to send email: {ex.Message}"; }
     }
 }
-
+*/
 // ─────────────────────────────────────────────────────────────
 // PROCESS SKILL (OpenClaw: exec, process)
 // ─────────────────────────────────────────────────────────────
@@ -556,7 +556,7 @@ public class ProcessSkill
         catch (Exception ex) { return $"Error killing process: {ex.Message}"; }
     }
 }
-
+/*
 // ─────────────────────────────────────────────────────────────
 // SYSTEM SKILL
 // ─────────────────────────────────────────────────────────────
@@ -586,7 +586,7 @@ public class SystemSkill
         return Environment.GetEnvironmentVariable(name) ?? "Variable not found.";
     }
 }
-
+*/
 // ─────────────────────────────────────────────────────────────
 // WEB SCRAPER SKILL (OpenClaw: web_fetch)
 // ─────────────────────────────────────────────────────────────
@@ -674,7 +674,7 @@ public class GitHubSkill
         catch (Exception ex) { return $"Error fetching file: {ex.Message}"; }
     }
 }
-
+/*
 // ─────────────────────────────────────────────────────────────
 // PLUGIN REGISTRY
 // ─────────────────────────────────────────────────────────────
@@ -723,3 +723,4 @@ public class PluginRegistry
             kernel.ImportPluginFromObject(new GitHubSkill(), "GitHub");
     }
 }
+*/
