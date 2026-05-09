@@ -59,10 +59,10 @@ public static class PluginRegistry
         Register("SearchSkill",      () => new SearchSkill(config),         "Search");
 
         // NEW SKILLS
-        Register("ProcessSkill", () => new ProcessSkill(), "Search");
-        Register("SystemSkill", () => new SystemSkill(), "Search");
-        Register("WebScraperSkill", () => new WebScraperSkill(), "Search");
-        Register("GitHubSkill", () => new GitHubSkill(), "Search");
+        Register("ProcessSkill", () => new ProcessSkill(), "Process");
+        Register("SystemSkill", () => new SystemSkill(), "System");
+        Register("WebScraperSkill", () => new WebScraperSkill(), "WebScraper");
+        Register("GitHubSkill", () => new GitHubSkill(), "GitHub");
 
         logger?.LogInformation("PluginRegistry: {Count} plugin(s) registered", count);
     }
